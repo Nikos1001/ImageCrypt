@@ -2,7 +2,8 @@
 
 public class Toolbar extends PApplet {
   
-  boolean prevPressed, justPressed;
+  boolean prevPressed, justPressed, repress;
+  long pressTime, timeSinceInitialPress;
   float elementHeight = 50;
   
   Toolbar() {
@@ -21,6 +22,17 @@ public class Toolbar extends PApplet {
   
   public void draw() {
     justPressed = mousePressed && !prevPressed;
+    if(justPressed) {
+      pressTime = millis();
+      timeSinceInitialPress = millis();
+      repress = false;
+    } else {
+      if(millis() - pressTime > 50 && millis() - timeSinceInitialPress > 500 && mousePressed) {
+        pressTime = millis();
+        justPressed = true;
+        repress = true;
+      }
+    }
     background(50);
     prevPressed = mousePressed;
     
@@ -46,13 +58,20 @@ public class Toolbar extends PApplet {
       
       loadImageData();
     }
+    
+    int shift = number(4, "Shift: " + pixelShift);
+    if(shift != 0) {
+      pixelShift += number(4, "Shift: " + pixelShift);
+      if(pixelShift < 0) pixelShift = img.pixels.length - 8;
+      loadImageData();
+    }
   }
   
   boolean button(int id, String label) {
     
     textSize(14);
     text(label, width / 2, id * elementHeight + elementHeight / 2);  
-    return justPressed && mouseY > id * elementHeight && mouseY < (id + 1) * elementHeight;
+    return justPressed && !repress && mouseY > id * elementHeight && mouseY < (id + 1) * elementHeight;
   }
   
   int number(int id, String label) {
@@ -63,16 +82,17 @@ public class Toolbar extends PApplet {
     text("-", 15, id * elementHeight + elementHeight / 2);
     text("+", width - 15, id * elementHeight + elementHeight / 2);
     
+    int result = 0;
     if(justPressed && mouseY > id * elementHeight && mouseY < (id + 1) * elementHeight) {
       if(mouseX < 30) {
-        return -1;
+        result = -1;
       }
       if(mouseX > width - 30) {
-        return 1;
+        result = 1;
       }
     }
-    
-    return 0;
+    if(repress) result *= 10;
+    return result;
   }
   
   void imageDialog(File file) {

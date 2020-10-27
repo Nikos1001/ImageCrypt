@@ -6,6 +6,7 @@ int charLimit = 2048;
 int charsPerLine = 32;
 String message, displayMessage;
 PFont font;
+int pixelShift = 0;
 
 void settings() {
   size(800, 600);
@@ -53,7 +54,7 @@ void loadImg(String filepath) {
 void loadImageData() {
   binary = "";
   img.loadPixels();
-  for(int i = 0; i < img.pixels.length; i ++) {
+  for(int i = pixelShift; i < img.pixels.length; i ++) {
     int r = floor(red(img.pixels[i]));
     appendNumberToBinary(r);
     if(binary.length() >= charLimit * 8) {
@@ -86,7 +87,7 @@ void convertBinaryToText() {
     displayMessage += c;
     if(message.length() % charsPerLine == 0) displayMessage += "\n";
     pointer += 8;
-    if(pointer >= binary.length()) return;
+    if(pointer + 8 >= binary.length()) return;
     c = (char)unbinary(binary.substring(pointer, pointer + 8));
     println(binary.substring(pointer, pointer + 8));
   }
@@ -118,23 +119,23 @@ void updateImageWithBinary() {
     int val = unbinary(binary.substring(i * encodingBits, (i + 1) * encodingBits));
     print(unbinary(binary.substring(i * encodingBits, (i + 1) * encodingBits)));
     print(' ');
-    color pixel = img.pixels[i / 3];
+    color pixel = img.pixels[i / 3 + pixelShift];
     if(i % 3 == 0) {
       int r = floor(red(pixel));
       r = modulo * floor(r / modulo) + val;
-      img.pixels[i / 3] = color(r, green(pixel), blue(pixel));
+      img.pixels[i / 3 + pixelShift] = color(r, green(pixel), blue(pixel));
       print(r);
     }
     if(i % 3 == 1) {
       int g = floor(green(pixel));
       g = modulo * floor(g / modulo) + val;
-      img.pixels[i / 3] = color(red(pixel), g, blue(pixel));
+      img.pixels[i / 3 + pixelShift] = color(red(pixel), g, blue(pixel));
       print(g);
     }
     if(i % 3 == 2) {
       int b = floor(blue(pixel));
       b = modulo * floor(b / modulo) + val;
-      img.pixels[i / 3] = color(red(pixel), green(pixel), b);
+      img.pixels[i / 3 + pixelShift] = color(red(pixel), green(pixel), b);
       print(b);
     }
     println();
