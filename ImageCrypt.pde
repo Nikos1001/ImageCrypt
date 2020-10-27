@@ -1,12 +1,13 @@
 
 PImage img;
 String binary;
-int encodingBits = 4;
+int encodingBits = 2;
 int charLimit = 2048;
 int charsPerLine = 32;
 String message, displayMessage;
 PFont font;
 int pixelShift = 0;
+boolean usingTextEditor;
 
 void settings() {
   size(800, 600);
@@ -52,25 +53,23 @@ void loadImg(String filepath) {
 }
 
 void loadImageData() {
+  usingTextEditor = false;
   binary = "";
   img.loadPixels();
   for(int i = pixelShift; i < img.pixels.length; i ++) {
     int r = floor(red(img.pixels[i]));
     appendNumberToBinary(r);
     if(binary.length() >= charLimit * 8) {
-      println("Image too high res! Binary cut short");
       break;
     }
     int g = floor(green(img.pixels[i]));
     appendNumberToBinary(g);
     if(binary.length() >= charLimit * 8) {
-      println("Image too high res! Binary cut short");
       break;
     }
     int b = floor(blue(img.pixels[i]));
     appendNumberToBinary(b);
     if(binary.length() >= charLimit * 8) {
-      println("Image too high res! Binary cut short");
       break;
     }
   }
@@ -89,10 +88,7 @@ void convertBinaryToText() {
     pointer += 8;
     if(pointer + 8 >= binary.length()) return;
     c = (char)unbinary(binary.substring(pointer, pointer + 8));
-    println(binary.substring(pointer, pointer + 8));
   }
-  println();
-  println("Reached EOF");
 }
 
 void appendNumberToBinary(int num) {
@@ -107,7 +103,6 @@ void encodeText(String txt) {
     binary += binary(c, 8);
   }
   binary += "00000000";
-  println(binary);
   updateImageWithBinary();
   loadImageData();
 }
@@ -117,28 +112,36 @@ void updateImageWithBinary() {
   int modulo = floor(pow(2, encodingBits));
   for(int i = 0; i < binary.length() / encodingBits; i ++) {
     int val = unbinary(binary.substring(i * encodingBits, (i + 1) * encodingBits));
-    print(unbinary(binary.substring(i * encodingBits, (i + 1) * encodingBits)));
-    print(' ');
     color pixel = img.pixels[i / 3 + pixelShift];
     if(i % 3 == 0) {
       int r = floor(red(pixel));
       r = modulo * floor(r / modulo) + val;
       img.pixels[i / 3 + pixelShift] = color(r, green(pixel), blue(pixel));
-      print(r);
     }
     if(i % 3 == 1) {
       int g = floor(green(pixel));
       g = modulo * floor(g / modulo) + val;
       img.pixels[i / 3 + pixelShift] = color(red(pixel), g, blue(pixel));
-      print(g);
     }
     if(i % 3 == 2) {
       int b = floor(blue(pixel));
       b = modulo * floor(b / modulo) + val;
       img.pixels[i / 3 + pixelShift] = color(red(pixel), green(pixel), b);
-      print(b);
     }
-    println();
   }
   img.updatePixels();
+}
+
+void keyPressed() {
+  if(usingTextEditor) {
+    if(key == 8) {
+      if(message.length() > 0) encodeText(message.substring(0, message.length() - 1));
+    } else {
+      encodeText(message + key);
+    }
+    usingTextEditor = true;
+  } else {
+    encodeText("");
+    usingTextEditor = true;
+  }
 }

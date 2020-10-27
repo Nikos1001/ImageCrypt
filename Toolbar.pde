@@ -63,6 +63,7 @@ public class Toolbar extends PApplet {
     if(shift != 0) {
       pixelShift += number(4, "Shift: " + pixelShift);
       if(pixelShift < 0) pixelShift = img.pixels.length - 8;
+      if(pixelShift > img.pixels.length - 8) pixelShift = 0;
       loadImageData();
     }
   }
