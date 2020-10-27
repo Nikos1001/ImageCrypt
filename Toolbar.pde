@@ -35,6 +35,17 @@ public class Toolbar extends PApplet {
     if(button(2, "Save Img")) {
       selectOutput("Select a location to save:", "saveDialog");
     }
+    
+    int bits = number(3, "Bits: " + encodingBits);
+    if(bits != 0) {
+      if(bits == 1) encodingBits *= 2;
+      if(bits == -1) encodingBits /= 2;
+      
+      if(encodingBits > 8) encodingBits = 8;
+      if(encodingBits < 1) encodingBits = 1;
+      
+      loadImageData();
+    }
   }
   
   boolean button(int id, String label) {
@@ -42,6 +53,26 @@ public class Toolbar extends PApplet {
     textSize(14);
     text(label, width / 2, id * elementHeight + elementHeight / 2);  
     return justPressed && mouseY > id * elementHeight && mouseY < (id + 1) * elementHeight;
+  }
+  
+  int number(int id, String label) {
+    textSize(14);
+    text(label, width / 2, id * elementHeight + elementHeight / 2);
+    
+    textSize(20);
+    text("-", 15, id * elementHeight + elementHeight / 2);
+    text("+", width - 15, id * elementHeight + elementHeight / 2);
+    
+    if(justPressed && mouseY > id * elementHeight && mouseY < (id + 1) * elementHeight) {
+      if(mouseX < 30) {
+        return -1;
+      }
+      if(mouseX > width - 30) {
+        return 1;
+      }
+    }
+    
+    return 0;
   }
   
   void imageDialog(File file) {
@@ -58,6 +89,7 @@ public class Toolbar extends PApplet {
     if(file == null) return;
     String msg = "";
     for(String str : loadStrings(file.getAbsolutePath())) {
+      if(msg.length() + str.length() + 1 > charLimit) break;
       msg += str + "\n";
     }
     encodeText(msg);

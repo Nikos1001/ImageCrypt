@@ -1,8 +1,8 @@
 
 PImage img;
 String binary;
-int encodingBits = 1;
-int charLimit = 512;
+int encodingBits = 4;
+int charLimit = 2048;
 int charsPerLine = 32;
 String message, displayMessage;
 PFont font;
